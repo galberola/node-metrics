@@ -2,7 +2,6 @@
  * This module is a cocktail of the most useful process and internal node
  * functions to track resources on the system that i found so far
  */
-
 'use strict';
 
 var config;
@@ -19,6 +18,7 @@ function initOptions(options) {
   // By default, all metrics are enabled to this module
   options.activeRequests = options.activeRequests === false ? false : true;
   options.activeHandles = options.activeHandles === false ? false : true;
+  options.memory = options.memory === false ? false : true;
 
   return options;
 }
@@ -31,6 +31,9 @@ Module.prototype.getMetric = function getMetric() {
   var metric = '';
   var tmp;
 
+  ///////////////////////////
+  // Track Active Requests //
+  ///////////////////////////
   if (config.activeRequests) {
     tmp = process._getActiveRequests();
     if (tmp && (tmp = tmp.length) >= 0) {
@@ -38,6 +41,9 @@ Module.prototype.getMetric = function getMetric() {
     }
   }
 
+  /////////////////////////////////////////////
+  // Track Active Handles (File Descriptors) //
+  /////////////////////////////////////////////
   if (config.activeHandles) {
     metric.length > 0 ? metric = metric + '#' : null;
     tmp = process._getActiveHandles();
@@ -47,44 +53,22 @@ Module.prototype.getMetric = function getMetric() {
     }
   }
 
+  ////////////////////////
+  // Track Memory Usage //
+  ////////////////////////
+  if (config.memory) {
+    metric.length > 0 ? metric = metric + '#' : null;
+    tmp = process.memoryUsage();
+    if (tmp) {
+      metric = metric +  'memrs:' + tmp.rss +
+                        '#memht:' + tmp.heapTotal +
+                        '#memhu:' + tmp.heapUsed;
+    }
+  }
+
   return metric;
 }
 
 module.exports = function init(options) {
   return new Module(options);
 }
-
-///////////////////////////////////////////
-// process._getActiveHandles() structure //
-///////////////////////////////////////////
-
-/*[{ _
-  idleNext: '[Circular]',
-  _idlePrev: '[Circular]',
-  msecs: 1000,
-  ontimeout: '[Function: listOnTimeout]'
-},
-{
-  domain: null,
-  _events: {
-    request: '[Object]',
-    connection: '[Function: connectionListener]',
-    clientError: '[Function]'
-  },
-  _maxListeners: 10,
-  _connections: 0,
-  connections: '[Getter/Setter]',
-  _handle: {
-    fd: 11,
-    writeQueueSize: 0,
-    onconnection: '[Function: onconnection]',
-    owner: '[Circular]'
-  },
-  _usingSlaves: false,
-  _slaves: '[]',
-  allowHalfOpen: true,
-  httpAllowHalfOpen: false,
-  timeout: 120000,
-  _connectionKey: '4:0.0.0.0:3000'
-}]*/
-
