@@ -19,6 +19,9 @@ var modules = [];
 var config;
 var writeStream;
 var interval;
+var tickTimeNs;
+var x;
+var xMax;
 
 
 function NodeMetrics(options) {
@@ -85,6 +88,10 @@ function initDefaultOptions(options) {
   // Logs are disabled by default
   options.log = options.log ? true : false;
 
+  // Meta-Metric: Add a metric of how much time in nano seconds
+  // it takes to execute the metrics loop each tick
+  options.metaMetricTickTime = options.metaMetricTickTime ? true : false;
+
   // Use the metrics path provided or use the defaul './metrics'
   options.metricsPath = options.metricsPath ?
                           options.metricsPath :
@@ -118,15 +125,23 @@ function initStreamWriter() {
  * writeStream
  */
 function tick() {
+  // Meta-Metrics: Begin tracking time of tick loop
+  config.metaMetricTickTime ? tickTimeNs = process.hrtime() : null;
+
   // The first data saved is uptime
   writeStream.write('uptime:' + process.uptime());
 
-  var x, xMax, module;
   // Iterate over modules and gather metrics that are written in the stream
   for (x = 0, xMax = modules.length ; x < xMax ; x++ ) {
-    module = modules[x];
-    writeStream.write('#' + module.getMetric());
+    writeStream.write('#' + modules[x].getMetric());
   }
+
+  // Meta-Metrics: End tracking time of tick loop
+  if (config.metaMetricTickTime) {
+    x = process.hrtime(time);
+    writeStream.write('#tkt:' + (diff[0] * 1e9 + diff[1]));
+  }
+
   // Add an EOL
   writeStream.write('\n');
 }
@@ -138,7 +153,7 @@ function tick() {
 NodeMetrics.prototype.end = function end() {
   // Stop the interval ()
   if (interval) {
-    stopInterval(interval);
+    clearInterval(interval);
     interval = null;
   }
 
