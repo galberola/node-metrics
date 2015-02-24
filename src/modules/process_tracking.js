@@ -7,10 +7,6 @@
 var config;
 
 function Module(options) {
-  config = initOptions(options);
-}
-
-function initOptions(options) {
   if (!options) {
     options = {};
   }
@@ -20,7 +16,7 @@ function initOptions(options) {
   options.activeHandles = options.activeHandles === false ? false : true;
   options.memory = options.memory === false ? false : true;
 
-  return options;
+  config = options;
 }
 
 /**
