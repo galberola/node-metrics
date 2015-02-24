@@ -4,7 +4,7 @@
  * This is the heart. This is a passive tracking module, which means
  * that it will register on the app. but it will not affect any flow.
  *
- * Each defined interval will request all registered modules (if any) for
+ * Each defined interval will request all registered metrics (if any) for
  * the metrics to be tracked. Those are writted into the write buffer
  *
  * Each metrics tracked represents a new line sepparated by characters
@@ -15,7 +15,7 @@ var fs = require('fs');
 var fse = require('fs-extra');
 var path = require('path');
 
-var modules = [];
+var metrics = [];
 var config;
 var writeStream;
 var interval;
@@ -28,45 +28,46 @@ function NodeMetrics(options) {
   config = initDefaultOptions(options);
 
   log('Initializing');
+  log(JSON.stringify(options));
 
   /////////////////////////////////
   // Metrics Module Registration //
   /////////////////////////////////
-  if (config.eventQueueLag) {
+  if (config.metrics.eventQueue !== false) {
     log('Registered metrics module Event Queue');
-    modules.push(
-      require('./modules/event_queue_lag')(config.eventQueueLag));
+    metrics.push(
+      require('./metrics/event_queue')(config.metrics.eventQueue));
   }
 
-  if (config.requestTracking) {
-    log('Registered metrics module Request Tracking');
-    modules.push(
-      require('./modules/request_tracking')(config.requestTracking));
+  if (config.metrics.request !== false) {
+    log('Registered metrics module Request');
+    metrics.push(
+      require('./metrics/request')(config.metrics.request));
   }
 
-  if (config.processTracking) {
-    log('Registered metrics module Process Tracking');
-    modules.push(
-      require('./modules/process_tracking')(config.processTracking));
+  if (config.metrics.process !== false) {
+    log('Registered metrics module Process');
+    metrics.push(
+      require('./metrics/process')(config.metrics.process));
   }
 
-  if (config.osTracking) {
-    log('Registered metrics module OS Tracking');
-    modules.push(
-      require('./modules/os_tracking')(config.osTracking));
+  if (config.metrics.os !== false) {
+    log('Registered metrics module OS');
+    metrics.push(
+      require('./metrics/os')(config.metrics.os));
   }
 
   // Only launch interval if there is at least one module registered
   // And we are not in test mode. Test uses the _forceTick method
   // to have control over the ticks
-  if (modules.length > 0 && config._test_mode !== true) {
+  if (metrics.length > 0 && config._test_mode !== true) {
     // Init the file stream to write metrics
     initStreamWriter();
     // Launch the interval to track metrics
     interval = setInterval(tick, config.tickTime * 1000);
     log('Tick interval set to ' + config.tickTime + ' second(s)');
   } else {
-    log('No Modules were configured for metrics...');
+    log('No metrics matched criteria to be added to the interval...');
   }
 }
 
@@ -82,6 +83,10 @@ function log(str, master) {
 function initDefaultOptions(options) {
   if (!options) {
     options = {};
+  }
+
+  if (!options.metrics) {
+    options.metrics = {};
   }
 
   // Init default values
@@ -126,7 +131,7 @@ function initStreamWriter() {
 /**
  * Function that will gather metrics each tick
  *
- * It will iterate over all the defined modules and gather the metrics
+ * It will iterate over all the defined metrics and gather the metrics
  * of each one of them. Those metrics are then persisted into the
  * writeStream
  */
@@ -137,9 +142,9 @@ function tick() {
   // The first data saved is uptime
   writeStream.write('uptime:' + process.uptime());
 
-  // Iterate over modules and gather metrics that are written in the stream
-  for (x = 0, xMax = modules.length ; x < xMax ; x++ ) {
-    writeStream.write('#' + modules[x].getMetric());
+  // Iterate over metrics and gather metrics that are written in the stream
+  for (x = 0, xMax = metrics.length ; x < xMax ; x++ ) {
+    writeStream.write('#' + metrics[x].getMetric());
   }
 
   // Meta-Metrics: End tracking time of tick loop
