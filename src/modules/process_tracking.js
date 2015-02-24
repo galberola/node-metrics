@@ -34,7 +34,7 @@ Module.prototype.getMetric = function getMetric() {
   if (config.activeRequests) {
     tmp = process._getActiveRequests();
     if (tmp && (tmp = tmp.length) >= 0) {
-      metric = 'ar:' + tmp;
+      metric = 'ptar:' + tmp;
     }
   }
 
@@ -45,8 +45,8 @@ Module.prototype.getMetric = function getMetric() {
     metric.length > 0 ? metric = metric + '#' : null;
     tmp = process._getActiveHandles();
     if (tmp && tmp.length > 0 && (tmp = tmp[1]._handle)) {
-      metric = metric + 'ahfd:' + tmp.fd +
-                        'ahqs:' + tmp.writeQueueSize;
+      metric = metric + 'ptfd:' + tmp.fd +
+                        'ptqs:' + tmp.writeQueueSize;
     }
   }
 
@@ -57,9 +57,9 @@ Module.prototype.getMetric = function getMetric() {
     metric.length > 0 ? metric = metric + '#' : null;
     tmp = process.memoryUsage();
     if (tmp) {
-      metric = metric +  'memrs:' + tmp.rss +
-                        '#memht:' + tmp.heapTotal +
-                        '#memhu:' + tmp.heapUsed;
+      metric = metric +  'ptmrs:' + tmp.rss +
+                        '#ptmht:' + tmp.heapTotal +
+                        '#ptmhu:' + tmp.heapUsed;
     }
   }
 

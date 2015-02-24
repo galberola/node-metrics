@@ -73,10 +73,10 @@ function registerConnectionTerminated() {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
-  metric =   'connew:' + tickCreated +
-            '#conend:' + tickEnded +
-            '#concur:' + currentConnections +
-            '#conmax:' + maxConcurrentConnections;
+  metric =   'rtn:' + tickCreated +
+            '#rte:' + tickEnded +
+            '#rtc:' + currentConnections +
+            '#rtm:' + maxConcurrentConnections;
 
   // max current connections track the peak on the tick only
   // so if the tick time is high, the peak is not lost on the metrics
