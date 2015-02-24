@@ -5,6 +5,8 @@
 'use strict';
 
 var config;
+var metric;
+var tmp;
 
 function Module(options) {
   if (!options) {
@@ -24,8 +26,7 @@ function Module(options) {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
-  var metric = '';
-  var tmp;
+  metric = '';
 
   ///////////////////////////
   // Track Active Requests //
