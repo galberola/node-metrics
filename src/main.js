@@ -50,6 +50,12 @@ function NodeMetrics(options) {
       require('./modules/process_tracking')(config.processTracking));
   }
 
+  if (config.osTracking) {
+    log('Registered metrics module OS Tracking');
+    modules.push(
+      require('./modules/os_tracking')(config.osTracking));
+  }
+
   // Only launch interval if there is at least one module registered
   // And we are not in test mode. Test uses the _forceTick method
   // to have control over the ticks
@@ -138,8 +144,8 @@ function tick() {
 
   // Meta-Metrics: End tracking time of tick loop
   if (config.metaMetricTickTime) {
-    x = process.hrtime(time);
-    writeStream.write('#tkt:' + (diff[0] * 1e9 + diff[1]));
+    x = process.hrtime(tickTimeNs);
+    writeStream.write('#tkt:' + (x[0] * 1e9 + x[1]));
   }
 
   // Add an EOL
