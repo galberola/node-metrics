@@ -19,6 +19,7 @@ var tickEnded = 0;
 var currentConnections = 0;
 // tracks peak of connections
 var maxConcurrentConnections = 0;
+var metric;
 
 function Module(options) {
   if (!options || !options.connect) {
@@ -72,10 +73,10 @@ function registerConnectionTerminated() {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
-  var metric =   'connew:' + tickCreated +
-                '#conend:' + tickEnded +
-                '#concur:' + currentConnections +
-                '#conmax:' + maxConcurrentConnections;
+  metric =   'connew:' + tickCreated +
+            '#conend:' + tickEnded +
+            '#concur:' + currentConnections +
+            '#conmax:' + maxConcurrentConnections;
 
   // max current connections track the peak on the tick only
   // so if the tick time is high, the peak is not lost on the metrics
