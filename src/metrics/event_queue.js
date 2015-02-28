@@ -32,16 +32,16 @@ function Module(options, metametrics) {
  * Retrieve the metrics that this module provides
  * @return {string} Data gathered
  */
-Module.prototype.getMetric = function getMetric() {
+Module.prototype.getMetric = function getMetric(writeStream) {
   // Meta-Metrics: Begin tracking time of tick loop
   isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
 
-  metric = '"eql":' + toobusy.lag();
+  writeStream.write('"eql":' + toobusy.lag());
 
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
     tmp = process.hrtime(tickTimeNs);
-    metric = metric + ',"eqtk":' + (tmp[0] * 1e9 + tmp[1]);
+    writeStream.write(',"eqtk":' + (tmp[0] * 1e9 + tmp[1]));
   }
 
   return metric;

@@ -37,27 +37,27 @@ function NodeMetrics(options) {
     log('Registered metrics module Event Queue');
     metrics.push(
       require('./metrics/event_queue')(
-        config.metrics.eventQueue, config.metaMetricTickTime));
+        config.metrics.eventQueue, config.metaMetric));
   }
 
   if (config.metrics.request !== false) {
     log('Registered metrics module Request');
     metrics.push(
       require('./metrics/request')(
-        config.metrics.request, config.metaMetricTickTime));
+        config.metrics.request, config.metaMetric));
   }
 
   if (config.metrics.process !== false) {
     log('Registered metrics module Process');
     metrics.push(
       require('./metrics/process')(
-        config.metrics.process, config.metaMetricTickTime));
+        config.metrics.process, config.metaMetric));
   }
 
   if (config.metrics.os !== false) {
     log('Registered metrics module OS');
     metrics.push(
-      require('./metrics/os')(config.metrics.os, config.metaMetricTickTime));
+      require('./metrics/os')(config.metrics.os, config.metaMetric));
   }
 
   // Only launch interval if there is at least one module registered
@@ -104,7 +104,7 @@ function initDefaultOptions(options) {
 
   // Meta-Metric: Add a metric of how much time in nano seconds
   // it takes to execute the metrics loop each tick
-  options.metaMetricTickTime = options.metaMetricTickTime ? true : false;
+  options.metaMetric = options.metaMetric ? true : false;
 
   // Use the metrics path provided or use the defaul './metrics'
   options.metricsPath = options.metricsPath ?
@@ -140,7 +140,7 @@ function initStreamWriter() {
  */
 function tick() {
   // Meta-Metrics: Begin tracking time of tick loop
-  config.metaMetricTickTime ? tickTimeNs = process.hrtime() : null;
+  config.metaMetric ? tickTimeNs = process.hrtime() : null;
 
   // Open JSON tag
   writeStream.write('{');
@@ -151,11 +151,11 @@ function tick() {
       // Append # to the beginning of a new metric response
       writeStream.write(',')
     }
-    writeStream.write(metrics[x].getMetric());
+    metrics[x].getMetric(writeStream);
   }
 
   // Meta-Metrics: End tracking time of tick loop
-  if (config.metaMetricTickTime) {
+  if (config.metaMetric) {
     x = process.hrtime(tickTimeNs);
     writeStream.write(',"tk":' + (x[0] * 1e9 + x[1]));
   }

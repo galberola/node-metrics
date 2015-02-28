@@ -11,18 +11,14 @@ var cpu;
 var isMetaMetricEnabled;
 var tickTimeNs;
 var firstArrElement;
+var addSeparator;
 
 function Module(options, metametrics) {
   if (!options) {
     options = {};
   }
 
-  options.memory = options.memory === false ? false : true;
-  options.cpu = options.cpu === false ? false : true;
-  options.loadavg = options.loadavg === false ? false : true;
-
   config = options;
-
   isMetaMetricEnabled = metametrics;
 }
 
@@ -30,7 +26,7 @@ function Module(options, metametrics) {
  * Retrieve the metrics that this module provides
  * @return {string} Data gathered
  */
-Module.prototype.getMetric = function getMetric() {
+Module.prototype.getMetric = function getMetric(writeStream) {
   // Meta-Metrics: Begin tracking time of tick loop
   isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
 
@@ -39,56 +35,50 @@ Module.prototype.getMetric = function getMetric() {
   /////////////////////////////
   // Track OS Memory reports //
   /////////////////////////////
-  if (config.memory) {
-    metric =   '"ostm":' + os.totalmem() +
-              ',"osfm":' + os.freemem();
-  }
+  writeStream.write( '"ostm":' + os.totalmem());
+  writeStream.write(',"osfm":' + os.freemem());
 
   ////////////////////////
   // Track Load Average //
   ////////////////////////
-  if (config.loadavg) {
-    metric.length > 0 ? metric = metric + ',' : null;
-    metric = metric + '"osavg":[' + os.loadavg() + ']';
-  }
+  writeStream.write(',"osavg":[' + os.loadavg() + ']');
+
 
   ////////////////////
   // Track CPU Load //
   ////////////////////
-  if (config.cpu) {
-    tmp = os.cpus();
-    if (tmp && tmp.length > 0) {
-      metric.length > 0 ? metric = metric + ',' : null;
-      metric = metric + '"oscpu":[';
+  tmp = os.cpus();
+  if (tmp && tmp.length > 0) {
+    writeStream.write(',"oscpu":[');
 
-      firstArrElement = true;
-      for (x = 0, xMax = tmp.length; x < xMax ; x++) {
-        cpu = tmp[x];
-        if (cpu && (cpu = cpu.times)) {
-          // If not the first element, separate jsons with ,
-          if (!firstArrElement) {
-            metric = metric + ',';
-          }
-          metric = metric + '{' +
-                      '"core":' + x         + ',' +
-                      '"user":' + cpu.user  + ',' +
-                      '"nice":' + cpu.nice  + ',' +
-                      '"sys":'  + cpu.sys   + ',' +
-                      '"idle":' + cpu.idle  + ',' +
-                      '"irq":'  + cpu.irq   + ''  +
-                    '}';
-          // Notify that the next element is not the first one
-          firstArrElement = false;
+    firstArrElement = true;
+    for (x = 0, xMax = tmp.length; x < xMax ; x++) {
+      cpu = tmp[x];
+      if (cpu && (cpu = cpu.times)) {
+        // If not the first element, separate jsons with ,
+        if (!firstArrElement) {
+          writeStream.write(',');
         }
+        writeStream.write('{' +
+                    '"core":' + x         + ',' +
+                    '"user":' + cpu.user  + ',' +
+                    '"nice":' + cpu.nice  + ',' +
+                    '"sys":'  + cpu.sys   + ',' +
+                    '"idle":' + cpu.idle  + ',' +
+                    '"irq":'  + cpu.irq   + ''  +
+                  '}');
+        // Notify that the next element is not the first one
+        firstArrElement = false;
       }
-      metric = metric + ']';
     }
+    writeStream.write(']');
   }
+
 
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
     tmp = process.hrtime(tickTimeNs);
-    metric = metric + ',"ostk":' + (tmp[0] * 1e9 + tmp[1]);
+    writeStream.write(',"ostk":' + (tmp[0] * 1e9 + tmp[1]));
   }
 
   return metric;

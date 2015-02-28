@@ -77,14 +77,14 @@ function registerConnectionTerminated() {
  * Retrieve the metrics that this module provides
  * @return {string} Data gathered
  */
-Module.prototype.getMetric = function getMetric() {
+Module.prototype.getMetric = function getMetric(writeStream) {
   // Meta-Metrics: Begin tracking time of tick loop
   isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
 
-  metric =   '"rtn":' + tickCreated +
-            ',"rte":' + tickEnded +
-            ',"rtc":' + currentConnections +
-            ',"rtm":' + maxConcurrentConnections;
+  writeStream.write( '"rtn":' + tickCreated);
+  writeStream.write(',"rte":' + tickEnded);
+  writeStream.write(',"rtc":' + currentConnections);
+  writeStream.write(',"rtm":' + maxConcurrentConnections);
 
   // max current connections track the peak on the tick only
   // so if the tick time is high, the peak is not lost on the metrics
@@ -97,7 +97,7 @@ Module.prototype.getMetric = function getMetric() {
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
     tmp = process.hrtime(tickTimeNs);
-    metric = metric + ',"rttk":' + (tmp[0] * 1e9 + tmp[1]);
+    writeStream.write(',"rttk":' + (tmp[0] * 1e9 + tmp[1]));
   }
 
   return metric;

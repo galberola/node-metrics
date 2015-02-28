@@ -30,7 +30,7 @@ function Module(options, metametrics) {
  * Retrieve the metrics that this module provides
  * @return {string} Data gathered
  */
-Module.prototype.getMetric = function getMetric() {
+Module.prototype.getMetric = function getMetric(writeStream) {
   // Meta-Metrics: Begin tracking time of tick loop
   isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
 
@@ -39,50 +39,36 @@ Module.prototype.getMetric = function getMetric() {
   ///////////////////////////
   // Track Active Requests //
   ///////////////////////////
-  if (config.activeRequests) {
-    tmp = process._getActiveRequests();
-    if (tmp && (tmp = tmp.length) >= 0) {
-      metric = '"ptar":' + tmp;
-    }
-  }
+  writeStream.write('"ptar":' + process._getActiveRequests().length);
+
 
   /////////////////////////////////////////////
   // Track Active Handles (File Descriptors) //
   /////////////////////////////////////////////
-  if (config.activeHandles) {
-    metric.length > 0 ? metric = metric + ',' : null;
-    tmp = process._getActiveHandles();
-    if (tmp && tmp.length > 0 && (tmp = tmp[1]._handle)) {
-      metric = metric +  '"ptfd":' + tmp.fd +
-                        ',"ptqs":' + tmp.writeQueueSize;
-    }
+  tmp = process._getActiveHandles();
+  if (tmp && tmp.length > 0 && (tmp = tmp[1]._handle)) {
+    writeStream.write(',"ptfd":' + tmp.fd);
+    writeStream.write(',"ptqs":' + tmp.writeQueueSize);
   }
 
   ////////////////////////
   // Track Memory Usage //
   ////////////////////////
-  if (config.memory) {
-    metric.length > 0 ? metric = metric + ',' : null;
-    tmp = process.memoryUsage();
-    if (tmp) {
-      metric = metric +  '"ptmrs":' + tmp.rss +
-                        ',"ptmht":' + tmp.heapTotal +
-                        ',"ptmhu":' + tmp.heapUsed;
-    }
-  }
+  tmp = process.memoryUsage();
+  writeStream.write(',"ptmrs":' + tmp.rss);
+  writeStream.write(',"ptmht":' + tmp.heapTotal);
+  writeStream.write(',"ptmhu":' + tmp.heapUsed);
+
 
   //////////////////
   // Track Uptime //
   //////////////////
-  if (config.uptime) {
-    metric.length > 0 ? metric = metric + ',' : null;
-    metric = metric + '"ptup":' + process.uptime();
-  }
+  writeStream.write(',"ptup":' + process.uptime());
 
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
     tmp = process.hrtime(tickTimeNs);
-    metric = metric + ',"pttk":' + (tmp[0] * 1e9 + tmp[1]);
+    writeStream.write(',"pttk":' + (tmp[0] * 1e9 + tmp[1]));
   }
 
   return metric;
