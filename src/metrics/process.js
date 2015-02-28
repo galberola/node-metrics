@@ -17,6 +17,7 @@ function Module(options) {
   options.activeRequests = options.activeRequests === false ? false : true;
   options.activeHandles = options.activeHandles === false ? false : true;
   options.memory = options.memory === false ? false : true;
+  options.uptime = options.uptime === false ? false : true;
 
   config = options;
 }
@@ -45,8 +46,8 @@ Module.prototype.getMetric = function getMetric() {
     metric.length > 0 ? metric = metric + '#' : null;
     tmp = process._getActiveHandles();
     if (tmp && tmp.length > 0 && (tmp = tmp[1]._handle)) {
-      metric = metric + 'ptfd:' + tmp.fd +
-                        'ptqs:' + tmp.writeQueueSize;
+      metric = metric +  'ptfd:' + tmp.fd +
+                        '#ptqs:' + tmp.writeQueueSize;
     }
   }
 
@@ -61,6 +62,14 @@ Module.prototype.getMetric = function getMetric() {
                         '#ptmht:' + tmp.heapTotal +
                         '#ptmhu:' + tmp.heapUsed;
     }
+  }
+
+  //////////////////
+  // Track Uptime //
+  //////////////////
+  if (config.uptime) {
+    metric.length > 0 ? metric = metric + '#' : null;
+    metric = metric + 'ptup:' + process.uptime();
   }
 
   return metric;

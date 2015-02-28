@@ -139,12 +139,13 @@ function tick() {
   // Meta-Metrics: Begin tracking time of tick loop
   config.metaMetricTickTime ? tickTimeNs = process.hrtime() : null;
 
-  // The first data saved is uptime
-  writeStream.write('uptime:' + process.uptime());
-
   // Iterate over metrics and gather metrics that are written in the stream
   for (x = 0, xMax = metrics.length ; x < xMax ; x++ ) {
-    writeStream.write('#' + metrics[x].getMetric());
+    if (x > 0) {
+      // Append # to the beginning of a new metric response
+      writeStream.write('#')
+    }
+    writeStream.write(metrics[x].getMetric());
   }
 
   // Meta-Metrics: End tracking time of tick loop
