@@ -157,7 +157,7 @@ function tick() {
   // Meta-Metrics: End tracking time of tick loop
   if (config.metaMetric) {
     x = process.hrtime(tickTimeNs);
-    writeStream.write(',"tk":' + (x[0] * 1e9 + x[1]));
+    writeStream.write(',"mm":' + (x[0] * 1e9 + x[1]));
   }
 
   // Close JSON tag and add an EOL

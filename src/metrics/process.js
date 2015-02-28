@@ -68,7 +68,7 @@ Module.prototype.getMetric = function getMetric(writeStream) {
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
     tmp = process.hrtime(tickTimeNs);
-    writeStream.write(',"pttk":' + (tmp[0] * 1e9 + tmp[1]));
+    writeStream.write(',"ptmm":' + (tmp[0] * 1e9 + tmp[1]));
   }
 
   return metric;
