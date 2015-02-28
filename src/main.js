@@ -139,11 +139,14 @@ function tick() {
   // Meta-Metrics: Begin tracking time of tick loop
   config.metaMetricTickTime ? tickTimeNs = process.hrtime() : null;
 
+  // Open JSON tag
+  writeStream.write('{');
+
   // Iterate over metrics and gather metrics that are written in the stream
   for (x = 0, xMax = metrics.length ; x < xMax ; x++ ) {
     if (x > 0) {
       // Append # to the beginning of a new metric response
-      writeStream.write('#')
+      writeStream.write(',')
     }
     writeStream.write(metrics[x].getMetric());
   }
@@ -151,11 +154,11 @@ function tick() {
   // Meta-Metrics: End tracking time of tick loop
   if (config.metaMetricTickTime) {
     x = process.hrtime(tickTimeNs);
-    writeStream.write('#tk:' + (x[0] * 1e9 + x[1]));
+    writeStream.write(',"tk":' + (x[0] * 1e9 + x[1]));
   }
 
-  // Add an EOL
-  writeStream.write('\n');
+  // Close JSON tag and add an EOL
+  writeStream.write('}\n');
 }
 
 /**

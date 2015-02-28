@@ -32,16 +32,16 @@ Module.prototype.getMetric = function getMetric() {
   // Track OS Memory reports //
   /////////////////////////////
   if (config.memory) {
-    metric =   'ostm:' + os.totalmem()
-              '#osfm:' + os.freemem();
+    metric =   '"ostm":' + os.totalmem() +
+              ',"osfm":' + os.freemem();
   }
 
   ////////////////////////
   // Track Load Average //
   ////////////////////////
   if (config.loadavg) {
-    metric.length > 0 ? metric = metric + '#' : null;
-    metric = metric + '#osavg:' + os.loadavg();
+    metric.length > 0 ? metric = metric + ',' : null;
+    metric = metric + '"osavg":[' + os.loadavg() + ']';
   }
 
   ////////////////////
@@ -50,19 +50,30 @@ Module.prototype.getMetric = function getMetric() {
   if (config.cpu) {
     tmp = os.cpus();
     if (tmp && tmp.length > 0) {
-      metric.length > 0 ? metric = metric + '#' : null;
+      metric.length > 0 ? metric = metric + ',' : null;
+      metric = metric + '"oscpu":[';
+
+      var first = true;
       for (x = 0, xMax = tmp.length; x < xMax ; x++) {
         cpu = tmp[x];
         if (cpu && (cpu = cpu.times)) {
-          metric = metric +
-                  (x > 0 ? '#osc:' : 'osc:') + x +
-                  cpu.user + '|' +
-                  cpu.nice + '|' +
-                  cpu.sys + '|' +
-                  cpu.idle + '|' +
-                  cpu.irq;
+          // If not the first element, separate jsons with ,
+          if (!first) {
+            metric = metric + ',';
+          }
+          metric = metric + '{' +
+                      '"core":' + x         + ',' +
+                      '"user":' + cpu.user  + ',' +
+                      '"nice":' + cpu.nice  + ',' +
+                      '"sys":'  + cpu.sys   + ',' +
+                      '"idle":' + cpu.idle  + ',' +
+                      '"irq":'  + cpu.irq   + ''  +
+                    '}';
+          // Notify that the next element is not the first one
+          first = false;
         }
       }
+      metric = metric + ']';
     }
   }
 

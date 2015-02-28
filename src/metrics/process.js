@@ -35,7 +35,7 @@ Module.prototype.getMetric = function getMetric() {
   if (config.activeRequests) {
     tmp = process._getActiveRequests();
     if (tmp && (tmp = tmp.length) >= 0) {
-      metric = 'ptar:' + tmp;
+      metric = '"ptar":' + tmp;
     }
   }
 
@@ -43,11 +43,11 @@ Module.prototype.getMetric = function getMetric() {
   // Track Active Handles (File Descriptors) //
   /////////////////////////////////////////////
   if (config.activeHandles) {
-    metric.length > 0 ? metric = metric + '#' : null;
+    metric.length > 0 ? metric = metric + ',' : null;
     tmp = process._getActiveHandles();
     if (tmp && tmp.length > 0 && (tmp = tmp[1]._handle)) {
-      metric = metric +  'ptfd:' + tmp.fd +
-                        '#ptqs:' + tmp.writeQueueSize;
+      metric = metric +  '"ptfd":' + tmp.fd +
+                        ',"ptqs":' + tmp.writeQueueSize;
     }
   }
 
@@ -55,12 +55,12 @@ Module.prototype.getMetric = function getMetric() {
   // Track Memory Usage //
   ////////////////////////
   if (config.memory) {
-    metric.length > 0 ? metric = metric + '#' : null;
+    metric.length > 0 ? metric = metric + ',' : null;
     tmp = process.memoryUsage();
     if (tmp) {
-      metric = metric +  'ptmrs:' + tmp.rss +
-                        '#ptmht:' + tmp.heapTotal +
-                        '#ptmhu:' + tmp.heapUsed;
+      metric = metric +  '"ptmrs":' + tmp.rss +
+                        ',"ptmht":' + tmp.heapTotal +
+                        ',"ptmhu":' + tmp.heapUsed;
     }
   }
 
@@ -68,8 +68,8 @@ Module.prototype.getMetric = function getMetric() {
   // Track Uptime //
   //////////////////
   if (config.uptime) {
-    metric.length > 0 ? metric = metric + '#' : null;
-    metric = metric + 'ptup:' + process.uptime();
+    metric.length > 0 ? metric = metric + ',' : null;
+    metric = metric + '"ptup":' + process.uptime();
   }
 
   return metric;

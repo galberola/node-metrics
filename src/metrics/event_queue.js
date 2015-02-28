@@ -27,7 +27,7 @@ function Module(options) {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
-  return 'eql:' + toobusy.lag();
+  return '"eql":' + toobusy.lag();
 }
 
 module.exports = function init() {
