@@ -7,8 +7,10 @@
 var config;
 var metric;
 var tmp;
+var isMetaMetricEnabled;
+var tickTimeNs;
 
-function Module(options) {
+function Module(options, metametrics) {
   if (!options) {
     options = {};
   }
@@ -20,6 +22,8 @@ function Module(options) {
   options.uptime = options.uptime === false ? false : true;
 
   config = options;
+
+  isMetaMetricEnabled = metametrics;
 }
 
 /**
@@ -27,6 +31,9 @@ function Module(options) {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
+  // Meta-Metrics: Begin tracking time of tick loop
+  isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
+
   metric = '';
 
   ///////////////////////////
@@ -72,9 +79,15 @@ Module.prototype.getMetric = function getMetric() {
     metric = metric + '"ptup":' + process.uptime();
   }
 
+  // Meta-Metrics: End tracking time of tick loop
+  if (isMetaMetricEnabled) {
+    tmp = process.hrtime(tickTimeNs);
+    metric = metric + ',"pttk":' + (tmp[0] * 1e9 + tmp[1]);
+  }
+
   return metric;
 }
 
-module.exports = function init(options) {
-  return new Module(options);
+module.exports = function init(options, metametrics) {
+  return new Module(options, metametrics);
 }

@@ -36,25 +36,28 @@ function NodeMetrics(options) {
   if (config.metrics.eventQueue !== false) {
     log('Registered metrics module Event Queue');
     metrics.push(
-      require('./metrics/event_queue')(config.metrics.eventQueue));
+      require('./metrics/event_queue')(
+        config.metrics.eventQueue, config.metaMetricTickTime));
   }
 
   if (config.metrics.request !== false) {
     log('Registered metrics module Request');
     metrics.push(
-      require('./metrics/request')(config.metrics.request));
+      require('./metrics/request')(
+        config.metrics.request, config.metaMetricTickTime));
   }
 
   if (config.metrics.process !== false) {
     log('Registered metrics module Process');
     metrics.push(
-      require('./metrics/process')(config.metrics.process));
+      require('./metrics/process')(
+        config.metrics.process, config.metaMetricTickTime));
   }
 
   if (config.metrics.os !== false) {
     log('Registered metrics module OS');
     metrics.push(
-      require('./metrics/os')(config.metrics.os));
+      require('./metrics/os')(config.metrics.os, config.metaMetricTickTime));
   }
 
   // Only launch interval if there is at least one module registered

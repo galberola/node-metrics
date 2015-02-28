@@ -20,14 +20,19 @@ var currentConnections = 0;
 // tracks peak of connections
 var maxConcurrentConnections = 0;
 var metric;
+var isMetaMetricEnabled;
+var tickTimeNs;
+var tmp;
 
-function Module(options) {
+function Module(options, metametrics) {
   if (!options || !options.connect) {
     throw new Error('Using the requests_tracking requires connect');
   }
 
   // Register middleware
   options.connect.use(registerNewConnectionMiddleware);
+
+  isMetaMetricEnabled = metametrics;
 }
 
 /**
@@ -73,6 +78,9 @@ function registerConnectionTerminated() {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
+  // Meta-Metrics: Begin tracking time of tick loop
+  isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
+
   metric =   '"rtn":' + tickCreated +
             ',"rte":' + tickEnded +
             ',"rtc":' + currentConnections +
@@ -86,9 +94,15 @@ Module.prototype.getMetric = function getMetric() {
   // Also reset the per tick metrics
   tickCreated = tickEnded = 0;
 
+  // Meta-Metrics: End tracking time of tick loop
+  if (isMetaMetricEnabled) {
+    tmp = process.hrtime(tickTimeNs);
+    metric = metric + ',"rttk":' + (tmp[0] * 1e9 + tmp[1]);
+  }
+
   return metric;
 }
 
-module.exports = function init(options) {
-  return new Module(options);
+module.exports = function init(options, metametrics) {
+  return new Module(options, metametrics);
 }

@@ -8,8 +8,11 @@ var tmp;
 var x;
 var xMax;
 var cpu;
+var isMetaMetricEnabled;
+var tickTimeNs;
+var firstArrElement;
 
-function Module(options) {
+function Module(options, metametrics) {
   if (!options) {
     options = {};
   }
@@ -19,6 +22,8 @@ function Module(options) {
   options.loadavg = options.loadavg === false ? false : true;
 
   config = options;
+
+  isMetaMetricEnabled = metametrics;
 }
 
 /**
@@ -26,6 +31,9 @@ function Module(options) {
  * @return {string} Data gathered
  */
 Module.prototype.getMetric = function getMetric() {
+  // Meta-Metrics: Begin tracking time of tick loop
+  isMetaMetricEnabled ? tickTimeNs = process.hrtime() : null;
+
   metric = '';
 
   /////////////////////////////
@@ -53,12 +61,12 @@ Module.prototype.getMetric = function getMetric() {
       metric.length > 0 ? metric = metric + ',' : null;
       metric = metric + '"oscpu":[';
 
-      var first = true;
+      firstArrElement = true;
       for (x = 0, xMax = tmp.length; x < xMax ; x++) {
         cpu = tmp[x];
         if (cpu && (cpu = cpu.times)) {
           // If not the first element, separate jsons with ,
-          if (!first) {
+          if (!firstArrElement) {
             metric = metric + ',';
           }
           metric = metric + '{' +
@@ -70,16 +78,22 @@ Module.prototype.getMetric = function getMetric() {
                       '"irq":'  + cpu.irq   + ''  +
                     '}';
           // Notify that the next element is not the first one
-          first = false;
+          firstArrElement = false;
         }
       }
       metric = metric + ']';
     }
   }
 
+  // Meta-Metrics: End tracking time of tick loop
+  if (isMetaMetricEnabled) {
+    tmp = process.hrtime(tickTimeNs);
+    metric = metric + ',"ostk":' + (tmp[0] * 1e9 + tmp[1]);
+  }
+
   return metric;
 }
 
-module.exports = function init(options) {
-  return new Module(options);
+module.exports = function init(options, metametrics) {
+  return new Module(options, metametrics);
 }
