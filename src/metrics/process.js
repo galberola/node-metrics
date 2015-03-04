@@ -9,6 +9,7 @@ var metric;
 var tmp;
 var isMetaMetricEnabled;
 var tickTimeNs;
+var date;
 
 function Module(options, metametrics) {
   if (!options) {
@@ -24,6 +25,8 @@ function Module(options, metametrics) {
   config = options;
 
   isMetaMetricEnabled = metametrics;
+
+  date = new Date();
 }
 
 /**
@@ -60,10 +63,12 @@ Module.prototype.getMetric = function getMetric(writeStream) {
   writeStream.write(',"ptmhu":' + tmp.heapUsed);
 
 
-  //////////////////
-  // Track Uptime //
-  //////////////////
+  ///////////////////////////////////
+  // Track Uptime and current time //
+  ///////////////////////////////////
   writeStream.write(',"ptup":' + process.uptime());
+  writeStream.write(',"ptt":' + date.getTime());
+
 
   // Meta-Metrics: End tracking time of tick loop
   if (isMetaMetricEnabled) {
@@ -86,5 +91,6 @@ module.exports.keys = {
   'ptmht': '',
   'ptmhu': '',
   'ptup': '',
+  'ptt': '',
   'ptmm': ''
 };
