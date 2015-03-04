@@ -60,12 +60,12 @@ Module.prototype.getMetric = function getMetric(writeStream) {
           writeStream.write(',');
         }
         writeStream.write('{' +
-                    '"core":' + x         + ',' +
-                    '"user":' + cpu.user  + ',' +
-                    '"nice":' + cpu.nice  + ',' +
-                    '"sys":'  + cpu.sys   + ',' +
-                    '"idle":' + cpu.idle  + ',' +
-                    '"irq":'  + cpu.irq   + ''  +
+                    '"oscore":' + x         + ',' +
+                    '"osuser":' + cpu.user  + ',' +
+                    '"osnice":' + cpu.nice  + ',' +
+                    '"ossys":'  + cpu.sys   + ',' +
+                    '"osidle":' + cpu.idle  + ',' +
+                    '"osirq":'  + cpu.irq   + ''  +
                   '}');
         // Notify that the next element is not the first one
         firstArrElement = false;
@@ -84,6 +84,20 @@ Module.prototype.getMetric = function getMetric(writeStream) {
   return metric;
 }
 
-module.exports = function init(options, metametrics) {
+module.exports.init = function init(options, metametrics) {
   return new Module(options, metametrics);
 }
+
+module.exports.keys = {
+  'ostm': '',
+  'osfm': '',
+  'osavg': '',
+  'oscpu': '',
+  'oscore': '',
+  'osuser': '',
+  'osnice': '',
+  'ossys': '',
+  'osidle': '',
+  'osirq': '',
+  'osmm': ''
+};

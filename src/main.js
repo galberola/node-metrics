@@ -36,28 +36,29 @@ function NodeMetrics(options) {
   if (config.metrics.eventQueue !== false) {
     log('Registered metrics module Event Queue');
     metrics.push(
-      require('./metrics/event_queue')(
-        config.metrics.eventQueue, config.metaMetric));
+      require('./metrics/event_queue')
+      .init(config.metrics.eventQueue, config.metaMetric));
   }
 
   if (config.metrics.request !== false) {
     log('Registered metrics module Request');
     metrics.push(
-      require('./metrics/request')(
-        config.metrics.request, config.metaMetric));
+      require('./metrics/request')
+      .init(config.metrics.request, config.metaMetric));
   }
 
   if (config.metrics.process !== false) {
     log('Registered metrics module Process');
     metrics.push(
-      require('./metrics/process')(
-        config.metrics.process, config.metaMetric));
+      require('./metrics/process')
+      .init(config.metrics.process, config.metaMetric));
   }
 
   if (config.metrics.os !== false) {
     log('Registered metrics module OS');
     metrics.push(
-      require('./metrics/os')(config.metrics.os, config.metaMetric));
+      require('./metrics/os')
+      .init(config.metrics.os, config.metaMetric));
   }
 
   // Only launch interval if there is at least one module registered
@@ -193,6 +194,6 @@ NodeMetrics.prototype._emmitTick = function _emmitTick() {
   }
 }
 
-module.exports = function init(options) {
+module.exports.metrics = function init(options) {
   return new NodeMetrics(options);
 }

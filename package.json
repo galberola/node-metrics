@@ -19,6 +19,7 @@
     "toobusy": "^0.2.4"
   },
   "devDependencies": {
-    "connect": "^3.3.4"
+    "connect": "^3.3.4",
+    "split": "^0.3.3"
   }
 }

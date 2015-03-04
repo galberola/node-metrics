@@ -74,6 +74,17 @@ Module.prototype.getMetric = function getMetric(writeStream) {
   return metric;
 }
 
-module.exports = function init(options, metametrics) {
+module.exports.init = function init(options, metametrics) {
   return new Module(options, metametrics);
 }
+
+module.exports.keys = {
+  'ptar': '',
+  'ptfd': '',
+  'ptqs': '',
+  'ptmrs': '',
+  'ptmht': '',
+  'ptmhu': '',
+  'ptup': '',
+  'ptmm': ''
+};

@@ -103,6 +103,15 @@ Module.prototype.getMetric = function getMetric(writeStream) {
   return metric;
 }
 
-module.exports = function init(options, metametrics) {
+module.exports.init = function init(options, metametrics) {
   return new Module(options, metametrics);
 }
+
+module.exports.keys = {
+  'rtn': '',
+  'rte': '',
+  'rtc': '',
+  'rtm': '',
+  'rtmm': ''
+};
+
