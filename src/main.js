@@ -14,6 +14,7 @@
 var fs = require('fs');
 var fse = require('fs-extra');
 var path = require('path');
+var log = require('./utils/log');
 
 var metrics = [];
 var config;
@@ -66,17 +67,13 @@ function NodeMetrics(options) {
   // to have control over the ticks
   if (metrics.length > 0 && config._test_mode !== true) {
     // Init the file stream to write metrics
-    initStreamWriter();
+    initStreamWriter(config.stream);
     // Launch the interval to track metrics
     interval = setInterval(tick, config.tickTime * 1000);
     log('Tick interval set to ' + config.tickTime + ' second(s)');
   } else {
     log('No metrics matched criteria to be added to the interval...');
   }
-}
-
-function log(str, master) {
-  config.log ? console.log('Node-Metrics: ' + str) : null;
 }
 
 /**
@@ -118,7 +115,16 @@ function initDefaultOptions(options) {
 /**
  * Initializes the stream that will be used to write the metrics
  */
-function initStreamWriter() {
+function initStreamWriter(ws) {
+  // Allow to pass a Stream Writer in the configuration and use that
+  // instead of the File Default one
+  if (ws) {
+    // TODO: Check that ws is an actual Stream Writtable
+    writeStream = ws;
+    log('Metrics will be streamed to the Stream provided in the configuration');
+    return;
+  }
+
   // Generate a new file to stream the metrics
   var streamName = 'metrics-' + (new Date()).getTime();
   var filePath = path.join(config.metricsPath, streamName);
