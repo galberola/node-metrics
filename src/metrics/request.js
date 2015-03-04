@@ -56,7 +56,14 @@ function registerNewConnectionMiddleware(req, res, next) {
   // Listen to the terminated connections to track ends and decrement
   // current connections
   res.on('finish', registerConnectionTerminated);
-  res.on('close', registerConnectionTerminated);
+  //res.on('close', registerConnectionTerminated);
+
+  /*
+    'finish' is the gracefuly ended the socket, while 'close' it's the
+    force close before .end was called.
+    If a 'close' event occurs, it will trigger also a 'finish' producing
+    negative results on current connections
+   */
 
   // Call the next element in the chain
   next();
